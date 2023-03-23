@@ -126,14 +126,16 @@ const getAllBooksHandler = (request, h) => {
 // menampilkan detail buku
 
 const getBookByIdHandler = (request, h) => {
-    const { id } = request.params;
+    const { bookId } = request.params;
 
-    const book = books.filter((b) => b.id === id)[0];
+    const book = books.filter((n) => n.id === bookId)[0];
 
     if (typeof book !== 'undefined') {
         const response = h.response({
             status: 'success',
-            data: { book },
+            data: {
+                book,
+            },
         });
 
         response.code(200);
@@ -152,22 +154,21 @@ const getBookByIdHandler = (request, h) => {
 // mengubah data buku
 
 const editBookByIdHandler = (request, h) => {
-    const { id } = request.params;
+    const { bookId } = request.params;
 
     const {
         name, year, author, summary, publisher, pageCount, readPage, reading,
     } = request.payload;
     const updatedAt = new Date().toISOString();
+    const index = books.findIndex((book) => book.id === bookId);
 
-    const index = books.findIndex((book) => book.id === id);
-
-    if (!name) {
+    if (typeof name === 'undefined') {
         const response = h.response({
             status: 'fail',
             message: 'Gagal memperbarui buku. Mohon isi nama buku',
         });
-        response.code(400);
 
+        response.code(400);
         return response;
     }
 
@@ -176,13 +177,12 @@ const editBookByIdHandler = (request, h) => {
             status: 'fail',
             message: 'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount',
         });
+
         response.code(400);
         return response;
     }
 
     if (index !== -1) {
-        const finished = pageCount === readPage;
-
         books[index] = {
             ...books[index],
             name,
@@ -192,7 +192,6 @@ const editBookByIdHandler = (request, h) => {
             publisher,
             pageCount,
             readPage,
-            finished,
             reading,
             updatedAt,
         };
@@ -215,10 +214,12 @@ const editBookByIdHandler = (request, h) => {
     return response;
 };
 
-const deleteBookByIdHandler = (request, h) => {
-    const { id } = request.params;
+// menghapus buku
 
-    const index = books.findIndex((book) => book.id === id);
+const deleteBookByIdHandler = (request, h) => {
+    const { bookId } = request.params;
+
+    const index = books.findIndex((book) => book.id === bookId);
 
     if (index !== -1) {
         books.splice(index, 1);
@@ -239,6 +240,7 @@ const deleteBookByIdHandler = (request, h) => {
     response.code(404);
     return response;
 };
+
 
 
 module.exports = {
